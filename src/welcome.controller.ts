@@ -3,7 +3,7 @@ import {WelcomeService} from './welcome.service';
 
 @Controller('welcome') 
 export class WelcomeController {
-    contructor(private readonly welcomeService: WelcomeService)
+    constructor(private readonly welcomeService: WelcomeService) {}
 
     @Get()
     getWelcome(): {message:string} {

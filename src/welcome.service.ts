@@ -1,5 +1,4 @@
 import { Injectable } from '@nestjs/common';
-import { WelcomeService } from './welcome.service';
 
 @Injectable()
 export class WelcomeService {
