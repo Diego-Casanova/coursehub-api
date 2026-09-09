@@ -17,6 +17,5 @@ export class CoursesController {
     return this.coursesService.findOne(Number(id));
     }
 
-    @Post()
-}
+};
 

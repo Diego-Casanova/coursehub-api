@@ -8,6 +8,9 @@ type Course = {
     level: string;
 };
 
+type CreateCourseInput = Omit<Course, 'id'>;
+type UpdateCourseInput = Partial<CreateCourseInput>;
+
 //Esto inserta instancias JSON para la entidad que creamos arriba, imaginalo como una tabla de base de datos
 @Injectable()
 export class CoursesService { //Siempre va ese export para que pueda llamarse desde otro lado
