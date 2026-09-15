@@ -1,5 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { title } from 'process';
+import { CreateCourseDto } from './dto/create-course.dto';
 
 //Esto crea una entidad "Course"
 type Course = {
@@ -14,6 +15,7 @@ type UpdateCourseInput = Partial<CreateCourseInput>;
 //Esto inserta instancias JSON para la entidad que creamos arriba, imaginalo como una tabla de base de datos
 @Injectable()
 export class CoursesService { //Siempre va ese export para que pueda llamarse desde otro lado
+    private nextId = 4;
     private readonly courses: Course[] = [
         {id: 1, title: 'NestJS Fundamentals', level: 'beginner'},
         {id: 2, title: 'REST APIs with NestJS', level: 'beginner'},
@@ -32,16 +34,11 @@ export class CoursesService { //Siempre va ese export para que pueda llamarse de
     return this.courses.find((course) => course.id === id);
     }
 
-    create(input: CreateCourseInput): Course{
-        const course: Course = {
-            id: Math.max(0, ...this.courses.map((item) => item.id)) + 1,
-            title: input.title,
-            level: input.level,
-        };
-
-        this.courses.push(course);
-        return course;
-    };
+    create(createCourseDto: CreateCourseDto): Course {
+    const course = { id: this.nextId++, ...createCourseDto };
+    this.courses.push(course);
+    return course;
+    }
 
     update(id: number, input: UpdateCourseInput): Course | undefined {
         const course = this.findOne(id);
