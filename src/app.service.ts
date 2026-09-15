@@ -6,3 +6,4 @@ export class AppService {
     return 'coursehub-api está en linea';
   }
 }
+
