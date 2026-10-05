@@ -8,3 +8,11 @@ export class CreateCourseDto{
     @IsIn(['beginner', 'intermediate', 'advanced'])
     level: string
 }
+
+export class UpdateCourseDto {
+  @IsString()
+  @IsNotEmpty()
+  title: string;
+  @IsIn(['beginner', 'intermediate', 'advanced'])
+  level:string;
+}
