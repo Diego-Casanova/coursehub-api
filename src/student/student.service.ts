@@ -1,81 +1,101 @@
 import { ConflictException, Injectable, NotFoundException } from '@nestjs/common';
+import { InjectRepository } from '@nestjs/typeorm';
+import { QueryFailedError, Repository } from 'typeorm';
 import { CreateStudentDto } from './dto/create-student.dto';
 import { StudentQueryDto } from './dto/student-query.dto';
 import { UpdateStudentDto } from './dto/update-student.dto';
-
-//Esto crea una entidad "Student"
-type Student = {
-    id: number;
-    name: string;
-    email: string;
-    age: number;
-    career: string;
-    semester: number;
-    isActive: boolean;
-};
-
-type CreateStudentInput = CreateStudentDto;
-type UpdateStudentInput = UpdateStudentDto;
+import { Student } from './entitites/student.entity';
 
 @Injectable()
 export class StudentService {
-    private nextId = 4;
-    private readonly students: Student[] = [
-        { id: 1, name: 'John Doe', email: 'john.doe@example.com', age: 20, career: 'Computer Science', semester: 5, isActive: true },
-        { id: 2, name: 'Jane Smith', email: 'jane.smith@example.com', age: 22, career: 'Mathematics', semester: 3, isActive: true },
-        { id: 3, name: 'Bob Johnson', email: 'bob.johnson@example.com', age: 21, career: 'Physics', semester: 4, isActive: false },
-    ];
+    constructor(
+        @InjectRepository(Student)
+        private readonly studentRepository: Repository<Student>,
+    ) {}
 
-    findAll(filters: StudentQueryDto = {}): Student[] {
-        return this.students.filter((student) =>
-            (filters.career === undefined || student.career === filters.career) &&
-            (filters.semester === undefined || student.semester === filters.semester) &&
-            (filters.isActive === undefined || student.isActive === filters.isActive),
-        );
+    async findAll(filters: StudentQueryDto = {}): Promise<Student[]> {
+        const where: Partial<Pick<Student, 'career' | 'semester' | 'isActive'>> = {};
+
+        if (filters.career !== undefined) where.career = filters.career;
+        if (filters.semester !== undefined) where.semester = filters.semester;
+        if (filters.isActive !== undefined) where.isActive = filters.isActive;
+
+        return this.studentRepository.find({ where });
     }
 
-    findOne(id: number): Student {
-        const student = this.students.find((item) => item.id === id);
+    async findOne(id: number): Promise<Student> {
+        const student = await this.studentRepository.findOneBy({ id });
         if (!student) {
             throw new NotFoundException(`Student with id ${id} not found`);
         }
         return student;
     }
 
-    create(createStudentInput: CreateStudentInput): Student {
-        if (this.students.some((student) => student.email === createStudentInput.email)) {
-            throw new ConflictException('Email is already registered');
-        }
-        const student = { id: this.nextId++, ...createStudentInput };
-        this.students.push(student);
-        return student;
+    async create(input: CreateStudentDto): Promise<Student> {
+        await this.ensureEmailIsAvailable(input.email);
+
+        const student = this.studentRepository.create(input);
+        return this.save(student);
     }
 
-    update(id: number, input: UpdateStudentInput): Student {
-        const student = this.findOne(id);
-        if (input.email && this.students.some((item) => item.id !== id && item.email === input.email)) {
-            throw new ConflictException('Email is already registered');
+    async update(id: number, input: UpdateStudentDto): Promise<Student> {
+        const student = await this.findOne(id);
+
+        if (input.email && input.email !== student.email) {
+            await this.ensureEmailIsAvailable(input.email, id);
         }
+
         Object.assign(student, input);
-        return student;
+        return this.save(student);
     }
 
-    updateStatus(id: number, isActive: boolean): Student {
-        const student = this.findOne(id);
+    async updateStatus(id: number, isActive: boolean): Promise<Student> {
+        const student = await this.findOne(id);
         student.isActive = isActive;
-        return student;
+        return this.studentRepository.save(student);
     }
 
-    remove(id: number): Student {
-        const index = this.students.findIndex((student) => student.id === id);
-        if (index === -1) {
-            throw new NotFoundException(`Student with id ${id} not found`);
-        }
-        if (!this.students[index].isActive) {
+    async remove(id: number): Promise<Student> {
+        const student = await this.findOne(id);
+
+        if (!student.isActive) {
             throw new ConflictException('Inactive students cannot be deleted');
         }
-        const [removedStudent] = this.students.splice(index, 1);
-        return removedStudent;
 
+        // remove() devuelve la entidad pero le quita el id, así que lo conservamos
+        const removed = { ...student };
+        await this.studentRepository.remove(student);
+        return removed;
+    }
+
+    // --- Helpers privados ---
+
+    private async ensureEmailIsAvailable(email: string, excludeId?: number): Promise<void> {
+        const existing = await this.studentRepository.findOneBy({ email });
+        if (existing && existing.id !== excludeId) {
+            throw new ConflictException(`The email ${email} is already registered`);
+        }
+    }
+
+    // Respaldo ante condiciones de carrera: si la BD rechaza por UNIQUE, también devolvemos 409
+    private async save(student: Student): Promise<Student> {
+        try {
+            return await this.studentRepository.save(student);
+        } catch (error) {
+            if (error instanceof QueryFailedError && this.isUniqueViolation(error)) {
+                throw new ConflictException('The email is already registered');
+            }
+            throw error;
+        }
+    }
+
+    private isUniqueViolation(error: QueryFailedError): boolean {
+        const driverError = error.driverError as { code?: string | number; errno?: number };
+        return (
+            driverError?.code === '23505' ||          // PostgreSQL
+            driverError?.code === 'ER_DUP_ENTRY' ||   // MySQL / MariaDB
+            driverError?.code === 'SQLITE_CONSTRAINT' || // SQLite
+            driverError?.errno === 1062               // MySQL (código numérico)
+        );
     }
 }
