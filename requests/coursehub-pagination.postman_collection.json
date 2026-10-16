@@ -1,0 +1,301 @@
+{
+  "info": {
+    "_postman_id": "1dbf512f-5f91-4a0a-9d6d-2b7b29ec7e10",
+    "name": "CourseHub - Paginacion y busquedas",
+    "description": "Coleccion reproducible para una base de datos vacia. Ejecutar las solicitudes en orden.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "http://localhost:3000"
+    },
+    {
+      "key": "activeStudentId",
+      "value": ""
+    },
+    {
+      "key": "enrollmentCourseId",
+      "value": ""
+    }
+  ],
+  "item": [
+    {
+      "name": "1. Crear cursos de prueba",
+      "item": [
+        {
+          "name": "Curso 01 - beginner",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": { "mode": "raw", "raw": "{\"title\":\"Algoritmos 01\",\"level\":\"beginner\"}" },
+            "url": "{{baseUrl}}/courses"
+          }
+        },
+        {
+          "name": "Curso 02 - beginner",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": { "mode": "raw", "raw": "{\"title\":\"Algoritmos 02\",\"level\":\"beginner\"}" },
+            "url": "{{baseUrl}}/courses"
+          }
+        },
+        {
+          "name": "Curso 03 - beginner",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": { "mode": "raw", "raw": "{\"title\":\"Algoritmos 03\",\"level\":\"beginner\"}" },
+            "url": "{{baseUrl}}/courses"
+          }
+        },
+        {
+          "name": "Curso 04 - intermediate",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": { "mode": "raw", "raw": "{\"title\":\"Bases de Datos 04\",\"level\":\"intermediate\"}" },
+            "url": "{{baseUrl}}/courses"
+          }
+        },
+        {
+          "name": "Curso 05 - intermediate",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": { "mode": "raw", "raw": "{\"title\":\"Bases de Datos 05\",\"level\":\"intermediate\"}" },
+            "url": "{{baseUrl}}/courses"
+          }
+        },
+        {
+          "name": "Curso 06 - intermediate",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": { "mode": "raw", "raw": "{\"title\":\"Bases de Datos 06\",\"level\":\"intermediate\"}" },
+            "url": "{{baseUrl}}/courses"
+          }
+        },
+        {
+          "name": "Curso 07 - advanced",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": { "mode": "raw", "raw": "{\"title\":\"Arquitectura 07\",\"level\":\"advanced\"}" },
+            "url": "{{baseUrl}}/courses"
+          }
+        },
+        {
+          "name": "Curso 08 - advanced",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": { "mode": "raw", "raw": "{\"title\":\"Arquitectura 08\",\"level\":\"advanced\"}" },
+            "url": "{{baseUrl}}/courses"
+          }
+        },
+        {
+          "name": "Curso 09 - advanced",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": { "mode": "raw", "raw": "{\"title\":\"Arquitectura 09\",\"level\":\"advanced\"}" },
+            "url": "{{baseUrl}}/courses"
+          }
+        },
+        {
+          "name": "Curso 10 - beginner",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": { "mode": "raw", "raw": "{\"title\":\"Programacion 10\",\"level\":\"beginner\"}" },
+            "url": "{{baseUrl}}/courses"
+          }
+        },
+        {
+          "name": "Curso 11 - intermediate",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": { "mode": "raw", "raw": "{\"title\":\"Programacion 11\",\"level\":\"intermediate\"}" },
+            "url": "{{baseUrl}}/courses"
+          }
+        },
+        {
+          "name": "Curso 12 - advanced",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": { "mode": "raw", "raw": "{\"title\":\"Programacion 12\",\"level\":\"advanced\"}" },
+            "url": "{{baseUrl}}/courses"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Preparar estudiante y matricula",
+      "item": [
+        {
+          "name": "Crear estudiante activo",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "const body = pm.response.json();",
+                  "pm.collectionVariables.set('activeStudentId', body.id);"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\"name\":\"Ana Torres\",\"email\":\"ana.torres.pagination@example.com\",\"age\":21,\"career\":\"Ingenieria de Software\",\"semester\":7,\"isActive\":true}"
+            },
+            "url": "{{baseUrl}}/students"
+          }
+        },
+        {
+          "name": "Crear matricula para busquedas",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "const body = pm.response.json();",
+                  "pm.collectionVariables.set('enrollmentCourseId', body.course.id);"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\"studentId\":{{activeStudentId}},\"courseId\":4}"
+            },
+            "url": "{{baseUrl}}/enrollments"
+          }
+        }
+      ]
+    },
+    {
+      "name": "2. Paginas consecutivas sin repetidos",
+      "item": [
+        {
+          "name": "Pagina 1 - limit 5 - titulo ASC",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "const body = pm.response.json();",
+                  "pm.test('La respuesta tiene items y meta', () => { pm.expect(body).to.have.all.keys('items', 'meta'); });",
+                  "pm.collectionVariables.set('pageOneIds', JSON.stringify(body.items.map(item => item.id)));"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/courses?page=1&limit=5&sortBy=title&order=ASC"
+          }
+        },
+        {
+          "name": "Pagina 2 - limit 5 - titulo ASC y sin ids repetidos",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "const body = pm.response.json();",
+                  "const firstPageIds = JSON.parse(pm.collectionVariables.get('pageOneIds') || '[]');",
+                  "const secondPageIds = body.items.map(item => item.id);",
+                  "const repeated = firstPageIds.filter(id => secondPageIds.includes(id));",
+                  "pm.test('Las paginas consecutivas no repiten cursos', () => { pm.expect(repeated).to.eql([]); });",
+                  "pm.test('La respuesta tiene metadatos', () => { pm.expect(body.meta.totalPages).to.be.at.least(2); });"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/courses?page=2&limit=5&sortBy=title&order=ASC"
+          }
+        }
+      ]
+    },
+    {
+      "name": "3. Filtrar cursos por nivel",
+      "request": {
+        "method": "GET",
+        "url": "{{baseUrl}}/courses?level=beginner&page=1&limit=5&sortBy=id&order=ASC"
+      }
+    },
+    {
+      "name": "4. Buscar matriculas por estudiante o curso",
+      "request": {
+        "method": "GET",
+        "url": "{{baseUrl}}/enrollments?search=ANA&page=1&limit=10"
+      }
+    },
+    {
+      "name": "5. Search + activeOnly + paginacion",
+      "request": {
+        "method": "GET",
+        "url": "{{baseUrl}}/enrollments?search=ana&studentId={{activeStudentId}}&activeOnly=true&page=1&limit=5"
+      }
+    },
+    {
+      "name": "6. Peticion invalida - debe responder 400",
+      "request": {
+        "method": "GET",
+        "url": "{{baseUrl}}/courses?page=0&limit=100&sortBy=password&order=DROP"
+      }
+    },
+    {
+      "name": "7. Busqueda sin resultados - debe responder 200 con items vacio",
+      "request": {
+        "method": "GET",
+        "url": "{{baseUrl}}/enrollments?search=valor-inexistente-999&page=1&limit=10"
+      }
+    }
+  ]
+}

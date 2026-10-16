@@ -1,16 +1,16 @@
 import { Entity, ManyToOne, PrimaryGeneratedColumn, Unique } from 'typeorm';
-import { Student } from '../../student/entitites/student.entity';
-import { Course } from '../../courses/entities/course.entity';
+import { Students } from '../../student/entitites/student.entity';
+import { Courses } from '../../courses/entities/course.entity';
 
 @Entity()
 @Unique(['student', 'course'])
-export class Enrollment {
+export class Enrollments {
   @PrimaryGeneratedColumn()
   id: number;
 
-  @ManyToOne(() => Student, { nullable: false, onDelete: 'RESTRICT' })
-  student: Student;
+  @ManyToOne(() => Students, { nullable: false, onDelete: 'RESTRICT' })
+  student: Students;
 
-  @ManyToOne(() => Course, { nullable: false, onDelete: 'RESTRICT' })
-  course: Course;
+  @ManyToOne(() => Courses, { nullable: false, onDelete: 'RESTRICT' })
+  course: Courses;
 }

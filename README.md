@@ -47,10 +47,10 @@ condiciones de carrera.
 | `PATCH` | `/students/:id` | Actualiza un estudiante | 200, 400, 404, 409 |
 | `PATCH` | `/students/:id/status` | Cambia `isActive` | 200, 400, 404 |
 | `POST` | `/courses` | Crea un curso persistido | 201, 400 |
-| `GET` | `/courses` | Lista cursos | 200 |
+| `GET` | `/courses` | Lista cursos paginados; query `level`, `page`, `limit`, `sortBy` (`id`, `title`, `level`) y `order` (`ASC`, `DESC`) | 200, 400 |
 | `GET` | `/courses/:id` | Obtiene un curso | 200, 400, 404 |
 | `POST` | `/enrollments` | Crea matrícula validando estudiante, curso, estado y duplicado | 201, 400, 404, 409 |
-| `GET` | `/enrollments` | Lista matrículas; combina `studentId` y `courseId` opcionales | 200, 400 |
+| `GET` | `/enrollments` | Lista matrículas paginadas; combina `search`, `studentId`, `courseId`, `activeOnly`, `page` y `limit` | 200, 400 |
 | `GET` | `/enrollments/:id` | Obtiene una matrícula con estudiante y curso | 200, 400, 404 |
 | `GET` | `/students/:studentId/enrollments` | Lista matrículas del estudiante | 200, 400, 404 |
 | `GET` | `/courses/:courseId/enrollments` | Lista matrículas del curso | 200, 400, 404 |
@@ -60,6 +60,31 @@ Las respuestas de matrículas incluyen información no sensible del estudiante
 (`id`, `name`, `email`, `age`, `career`, `semester`, `isActive`) y del curso
 (`id`, `title`, `level`); no se exponen credenciales.
 
+Todas las respuestas de listado usan este contrato:
+
+```json
+{
+  "items": [],
+  "meta": {
+    "total": 0,
+    "page": 1,
+    "limit": 10,
+    "totalPages": 0
+  }
+}
+```
+
+## Ejemplos de consultas paginadas
+
+1. `GET /courses?page=1&limit=5&sortBy=title&order=ASC` lista la primera
+   página de cursos ordenada por título.
+2. `GET /courses?level=beginner&page=1&limit=10` filtra por nivel y devuelve
+   sus metadatos de paginación.
+3. `GET /enrollments?search=ana&page=1&limit=10` busca sin distinguir
+   mayúsculas entre el nombre del estudiante y el título del curso.
+4. `GET /enrollments?search=ana&activeOnly=true&studentId=1&page=1&limit=5`
+   combina búsqueda, estudiante, estado activo y paginación.
+
 ## Demostración
 
 La colección [requests/enrollments.http](./requests/enrollments.http) contiene
@@ -67,6 +92,12 @@ los siete casos solicitados: creación de datos, matrícula válida, consulta
 después de reiniciar la API, duplicado 409, estudiante inactivo 400, filtros
 y cancelación seguida de consulta 404. Ajusta los ids de las variables si la
 base de datos ya contiene registros.
+
+Para probar específicamente paginación y búsquedas desde Postman, importa la
+colección [requests/coursehub-pagination.postman_collection.json](./requests/coursehub-pagination.postman_collection.json)
+y ejecuta sus solicitudes en orden. Está preparada para una base vacía: crea
+12 cursos, guarda automáticamente el id del estudiante activo y verifica con
+un test de Postman que las páginas 1 y 2 no repitan cursos.
 
 ## Comandos
 

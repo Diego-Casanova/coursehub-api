@@ -1,0 +1,97 @@
+@baseUrl = http://localhost:3000
+
+### 1. Crear 12 cursos para probar dos páginas
+POST {{baseUrl}}/courses
+Content-Type: application/json
+
+{"title":"Paginacion 01","level":"beginner"}
+
+###
+POST {{baseUrl}}/courses
+Content-Type: application/json
+
+{"title":"Paginacion 02","level":"beginner"}
+
+###
+POST {{baseUrl}}/courses
+Content-Type: application/json
+
+{"title":"Paginacion 03","level":"beginner"}
+
+###
+POST {{baseUrl}}/courses
+Content-Type: application/json
+
+{"title":"Paginacion 04","level":"intermediate"}
+
+###
+POST {{baseUrl}}/courses
+Content-Type: application/json
+
+{"title":"Paginacion 05","level":"intermediate"}
+
+###
+POST {{baseUrl}}/courses
+Content-Type: application/json
+
+{"title":"Paginacion 06","level":"intermediate"}
+
+###
+POST {{baseUrl}}/courses
+Content-Type: application/json
+
+{"title":"Paginacion 07","level":"advanced"}
+
+###
+POST {{baseUrl}}/courses
+Content-Type: application/json
+
+{"title":"Paginacion 08","level":"advanced"}
+
+###
+POST {{baseUrl}}/courses
+Content-Type: application/json
+
+{"title":"Paginacion 09","level":"advanced"}
+
+###
+POST {{baseUrl}}/courses
+Content-Type: application/json
+
+{"title":"Paginacion 10","level":"beginner"}
+
+###
+POST {{baseUrl}}/courses
+Content-Type: application/json
+
+{"title":"Paginacion 11","level":"intermediate"}
+
+###
+POST {{baseUrl}}/courses
+Content-Type: application/json
+
+{"title":"Paginacion 12","level":"advanced"}
+
+### 2. Pedir paginas 1 y 2 con el mismo ordenamiento; comparar ids, sin repetidos
+GET {{baseUrl}}/courses?page=1&limit=5&sortBy=title&order=ASC
+
+###
+GET {{baseUrl}}/courses?page=2&limit=5&sortBy=title&order=ASC
+
+### 3. Filtrar cursos por nivel y comprobar meta
+GET {{baseUrl}}/courses?level=beginner&page=1&limit=5&sortBy=id&order=ASC
+
+### 4. Buscar matriculas por nombre/titulo con mayusculas distintas
+GET {{baseUrl}}/enrollments?search=ANA&page=1&limit=10
+
+###
+GET {{baseUrl}}/enrollments?search=ana&page=1&limit=10
+
+### 5. Combinar search + activeOnly + paginacion
+GET {{baseUrl}}/enrollments?search=ana&activeOnly=true&page=1&limit=5
+
+### 6. Peticion invalida: debe responder 400
+GET {{baseUrl}}/courses?page=0&limit=100&sortBy=password&order=DROP
+
+### 7. Busqueda sin resultados: 200, items vacio y meta.total 0
+GET {{baseUrl}}/enrollments?search=valor-que-no-existe-999&page=1&limit=10

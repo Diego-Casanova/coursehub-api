@@ -5,45 +5,75 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { FindOptionsWhere, QueryFailedError, Repository } from 'typeorm';
+import { QueryFailedError, Repository } from 'typeorm';
 import { CoursesService } from '../courses/courses.service';
 import { StudentService } from '../student/student.service';
 import { CreateEnrollmentDto } from './dto/create-enrollment.dto';
 import { FilterEnrollmentsDto } from './dto/filter-enrollments.dto';
-import { Enrollment } from './entities/enrollments.entity';
+import { Enrollments } from './entities/enrollments.entity';
+import { Paginated } from '../common/interfaces/paginated';
 
 @Injectable()
 export class EnrollmentsService {
   constructor(
-    @InjectRepository(Enrollment)
-    private readonly enrollmentRepository: Repository<Enrollment>,
+    @InjectRepository(Enrollments)
+    private readonly enrollmentRepository: Repository<Enrollments>,
     private readonly studentService: StudentService,
     private readonly coursesService: CoursesService,
   ) {}
 
-  async findAll(filters: FilterEnrollmentsDto = {}): Promise<Enrollment[]> {
-    const where: FindOptionsWhere<Enrollment> = {};
-    if (filters.studentId !== undefined) where.student = { id: filters.studentId };
-    if (filters.courseId !== undefined) where.course = { id: filters.courseId };
+  async findAll(
+    filters: FilterEnrollmentsDto = new FilterEnrollmentsDto(),
+  ): Promise<Paginated<Enrollments>> {
+    const query = this.enrollmentRepository
+      .createQueryBuilder('enrollment')
+      .leftJoinAndSelect('enrollment.student', 'student')
+      .leftJoinAndSelect('enrollment.course', 'course')
+      .distinct(true)
+      .orderBy('enrollment.id', 'ASC')
+      .skip((filters.page - 1) * filters.limit)
+      .take(filters.limit);
 
-    return this.enrollmentRepository.find({
-      where,
-      relations: { student: true, course: true },
-      order: { id: 'ASC' },
-    });
+    if (filters.studentId !== undefined) {
+      query.andWhere('student.id = :studentId', { studentId: filters.studentId });
+    }
+    if (filters.courseId !== undefined) {
+      query.andWhere('course.id = :courseId', { courseId: filters.courseId });
+    }
+    if (filters.activeOnly === true) {
+      query.andWhere('student.isActive = :activeOnly', { activeOnly: true });
+    }
+    if (filters.search !== undefined) {
+      const escapedSearch = filters.search.replace(/[\\%_]/g, '\\$&');
+      query.andWhere(
+        '(student.name ILIKE :search OR course.title ILIKE :search)',
+        { search: `%${escapedSearch}%` },
+      );
+    }
+
+    const [items, total] = await query.getManyAndCount();
+    return {
+      items,
+      meta: {
+        total,
+        page: filters.page,
+        limit: filters.limit,
+        totalPages: total === 0 ? 0 : Math.ceil(total / filters.limit),
+      },
+    };
   }
 
-  async findByStudent(studentId: number): Promise<Enrollment[]> {
+  async findByStudent(studentId: number): Promise<Paginated<Enrollments>> {
     await this.studentService.findOne(studentId); // lanza 404 si no existe
-    return this.findAll({ studentId });
+    return this.findAll({ ...new FilterEnrollmentsDto(), studentId });
   }
 
-  async findByCourse(courseId: number): Promise<Enrollment[]> {
+  async findByCourse(courseId: number): Promise<Paginated<Enrollments>> {
     await this.coursesService.findOne(courseId); // lanza 404 si no existe
-    return this.findAll({ courseId });
+    return this.findAll({ ...new FilterEnrollmentsDto(), courseId });
   }
 
-  async findOne(id: number): Promise<Enrollment> {
+  async findOne(id: number): Promise<Enrollments> {
     const enrollment = await this.enrollmentRepository.findOne({
       where: { id },
       relations: { student: true, course: true },
@@ -54,7 +84,7 @@ export class EnrollmentsService {
     return enrollment;
   }
 
-  async create(dto: CreateEnrollmentDto): Promise<Enrollment> {
+  async create(dto: CreateEnrollmentDto): Promise<Enrollments> {
     // 1 y 2. Existencia (404)
     const student = await this.studentService.findOne(dto.studentId);
     const course = await this.coursesService.findOne(dto.courseId);
@@ -85,11 +115,11 @@ export class EnrollmentsService {
     }
   }
 
-  async cancel(id: number): Promise<Enrollment> {
+  async cancel(id: number): Promise<Enrollments> {
     const enrollment = await this.findOne(id);
 
     const cancelled = { ...enrollment }; // remove() borra el id de la instancia
     await this.enrollmentRepository.remove(enrollment);
-    return cancelled as Enrollment;
+    return cancelled as Enrollments;
   }
 }

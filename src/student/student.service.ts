@@ -4,17 +4,17 @@ import { QueryFailedError, Repository } from 'typeorm';
 import { CreateStudentDto } from './dto/create-student.dto';
 import { StudentQueryDto } from './dto/student-query.dto';
 import { UpdateStudentDto } from './dto/update-student.dto';
-import { Student } from './entitites/student.entity';
+import { Students } from './entitites/student.entity';
 
 @Injectable()
 export class StudentService {
     constructor(
-        @InjectRepository(Student)
-        private readonly studentRepository: Repository<Student>,
+        @InjectRepository(Students)
+        private readonly studentRepository: Repository<Students>,
     ) {}
 
-    async findAll(filters: StudentQueryDto = {}): Promise<Student[]> {
-        const where: Partial<Pick<Student, 'career' | 'semester' | 'isActive'>> = {};
+    async findAll(filters: StudentQueryDto = {}): Promise<Students[]> {
+        const where: Partial<Pick<Students, 'career' | 'semester' | 'isActive'>> = {};
 
         if (filters.career !== undefined) where.career = filters.career;
         if (filters.semester !== undefined) where.semester = filters.semester;
@@ -23,7 +23,7 @@ export class StudentService {
         return this.studentRepository.find({ where });
     }
 
-    async findOne(id: number): Promise<Student> {
+    async findOne(id: number): Promise<Students> {
         const student = await this.studentRepository.findOneBy({ id });
         if (!student) {
             throw new NotFoundException(`Student with id ${id} not found`);
@@ -31,14 +31,14 @@ export class StudentService {
         return student;
     }
 
-    async create(input: CreateStudentDto): Promise<Student> {
+    async create(input: CreateStudentDto): Promise<Students> {
         await this.ensureEmailIsAvailable(input.email);
 
         const student = this.studentRepository.create(input);
         return this.save(student);
     }
 
-    async update(id: number, input: UpdateStudentDto): Promise<Student> {
+    async update(id: number, input: UpdateStudentDto): Promise<Students> {
         const student = await this.findOne(id);
 
         if (input.email && input.email !== student.email) {
@@ -49,13 +49,13 @@ export class StudentService {
         return this.save(student);
     }
 
-    async updateStatus(id: number, isActive: boolean): Promise<Student> {
+    async updateStatus(id: number, isActive: boolean): Promise<Students> {
         const student = await this.findOne(id);
         student.isActive = isActive;
         return this.studentRepository.save(student);
     }
 
-    async remove(id: number): Promise<Student> {
+    async remove(id: number): Promise<Students> {
         const student = await this.findOne(id);
 
         if (!student.isActive) {
@@ -78,7 +78,7 @@ export class StudentService {
     }
 
     // Respaldo ante condiciones de carrera: si la BD rechaza por UNIQUE, también devolvemos 409
-    private async save(student: Student): Promise<Student> {
+    private async save(student: Students): Promise<Students> {
         try {
             return await this.studentRepository.save(student);
         } catch (error) {

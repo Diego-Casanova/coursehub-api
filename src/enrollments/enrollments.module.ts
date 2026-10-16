@@ -4,11 +4,11 @@ import { CoursesModule } from '../courses/courses.module';
 import { StudentModule } from '../student/student.module';
 import { EnrollmentsController } from './enrollments.controller';
 import { EnrollmentsService } from './enrollments.service';
-import { Enrollment } from './entities/enrollments.entity';
+import { Enrollments } from './entities/enrollments.entity';
 
 @Module({
   imports: [
-    TypeOrmModule.forFeature([Enrollment]),
+    TypeOrmModule.forFeature([Enrollments]),
     StudentModule,
     CoursesModule,
   ],
