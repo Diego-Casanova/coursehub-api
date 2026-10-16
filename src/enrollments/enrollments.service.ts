@@ -43,13 +43,21 @@ export class EnrollmentsService {
     return this.findAll({ courseId });
   }
 
+  async findOne(id: number): Promise<Enrollment> {
+    const enrollment = await this.enrollmentRepository.findOne({
+      where: { id },
+      relations: { student: true, course: true },
+    });
+    if (!enrollment) {
+      throw new NotFoundException(`La matrícula con id ${id} no existe`);
+    }
+    return enrollment;
+  }
+
   async create(dto: CreateEnrollmentDto): Promise<Enrollment> {
     // 1 y 2. Existencia (404)
     const student = await this.studentService.findOne(dto.studentId);
     const course = await this.coursesService.findOne(dto.courseId);
-    if (!course) {
-      throw new NotFoundException(`Course with id ${dto.courseId} not found`);
-    }
 
     // 3. Estudiante activo (400)
     if (!student.isActive) {
@@ -78,13 +86,7 @@ export class EnrollmentsService {
   }
 
   async cancel(id: number): Promise<Enrollment> {
-    const enrollment = await this.enrollmentRepository.findOne({
-      where: { id },
-      relations: { student: true, course: true },
-    });
-    if (!enrollment) {
-      throw new NotFoundException(`Enrollment with id ${id} not found`);
-    }
+    const enrollment = await this.findOne(id);
 
     const cancelled = { ...enrollment }; // remove() borra el id de la instancia
     await this.enrollmentRepository.remove(enrollment);

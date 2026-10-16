@@ -1,69 +1,46 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
+import { InjectRepository } from '@nestjs/typeorm';
+import { Repository } from 'typeorm';
 import { CreateCourseDto } from './dto/create-course.dto';
+import { UpdateCourseDto } from './dto/create-course.dto';
+import { Course } from './entities/course.entity';
 
-//Esto crea una entidad "Course"
-type Course = {
-    id: number;
-    title: string;
-    level: string;
-};
-
-type CreateCourseInput = Omit<Course, 'id'>;
-type UpdateCourseInput = Partial<CreateCourseInput>;
-
-//Esto inserta instancias JSON para la entidad que creamos arriba, imaginalo como una tabla de base de datos
 @Injectable()
-export class CoursesService { //Siempre va ese export para que pueda llamarse desde otro lado
-    private nextId = 4;
-    private readonly courses: Course[] = [
-        {id: 1, title: 'NestJS Fundamentals', level: 'beginner'},
-        {id: 2, title: 'REST APIs with NestJS', level: 'beginner'},
-        {id: 3, title: 'NestJS Architecture', level: 'intermediate'}
+export class CoursesService {
+    constructor(
+        @InjectRepository(Course)
+        private readonly courseRepository: Repository<Course>,
+    ) {}
 
-    ];
+    findAll(level?: string): Promise<Course[]> {
+        return this.courseRepository.find({ where: level ? { level } : {} });
+    }
 
-    findAll(level?: string): Course[]{
-        if(!level){
-            return this.courses;
+    async findOne(id: number): Promise<Course> {
+        const course = await this.courseRepository.findOneBy({ id });
+        if (!course) {
+            throw new NotFoundException(`El curso con id ${id} no existe`);
         }
-        return this.courses.filter((course) => course.level === level);
-    }
-
-    findOne(id: number): Course | undefined {
-    return this.courses.find((course) => course.id === id);
-    }
-
-    create(createCourseDto: CreateCourseDto): Course {
-    const course = { id: this.nextId++, ...createCourseDto };
-    this.courses.push(course);
-    return course;
-    }
-
-    update(id: number, input: UpdateCourseInput): Course | undefined {
-        const course = this.findOne(id);
-
-        if(!course) {
-            return undefined
-        }
-
-        Object.assign(course, input);
         return course;
     }
 
-    remove(id: number): Course | undefined{
-    const index = this.courses.findIndex((course) => course.id === id);
-    
-    if (index === -1){
-        return undefined;
+    create(createCourseDto: CreateCourseDto): Promise<Course> {
+        const course = this.courseRepository.create(createCourseDto);
+        return this.courseRepository.save(course);
     }
 
-    const [removedCourse] = this.courses.splice(index, 1);
-    return removedCourse;
+    async update(id: number, input: UpdateCourseDto): Promise<Course> {
+        const course = await this.findOne(id);
+        Object.assign(course, input);
+        return this.courseRepository.save(course);
+    }
+
+    async remove(id: number): Promise<Course> {
+        const course = await this.findOne(id);
+        await this.courseRepository.remove(course);
+        return course;
+    }
 }
-
-
-}
-
 
 
 

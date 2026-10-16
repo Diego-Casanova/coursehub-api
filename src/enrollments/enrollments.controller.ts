@@ -57,6 +57,22 @@ export class EnrollmentsController {
 		return this.enrollmentsService.findByCourse(courseId);
 	}
 
+	@Get('enrollments/:id')
+	@HttpCode(HttpStatus.OK)
+	findOne(
+		@Param(
+			'id',
+			new ParseIntPipe({
+				errorHttpStatusCode: HttpStatus.BAD_REQUEST,
+				exceptionFactory: () =>
+					new BadRequestException('El id debe ser un número entero'),
+			}),
+		)
+		id: number,
+	) {
+		return this.enrollmentsService.findOne(id);
+	}
+
 	@Post('enrollments')
 	@HttpCode(HttpStatus.CREATED)
 	create(@Body() dto: CreateEnrollmentDto) {

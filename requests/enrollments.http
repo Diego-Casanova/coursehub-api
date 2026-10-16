@@ -1,0 +1,79 @@
+@baseUrl = http://localhost:3000
+@studentId = 1
+@courseId = 1
+@enrollmentId = 1
+
+### 1. Crear curso y estudiante activo
+# Ejecutar primero estas dos solicitudes y ajustar los ids si la base ya contiene datos.
+POST {{baseUrl}}/courses
+Content-Type: application/json
+
+{
+  "title": "Bases de Datos",
+  "level": "intermediate"
+}
+
+###
+POST {{baseUrl}}/students
+Content-Type: application/json
+
+{
+  "name": "Ana Torres",
+  "email": "ana.torres@example.com",
+  "age": 21,
+  "career": "Ingenieria de Software",
+  "semester": 7,
+  "isActive": true
+}
+
+### 2. Crear matrícula válida
+POST {{baseUrl}}/enrollments
+Content-Type: application/json
+
+{
+  "studentId": {{studentId}},
+  "courseId": {{courseId}}
+}
+
+### 3. Reiniciar la API y consultar la misma matrícula
+GET {{baseUrl}}/enrollments?studentId={{studentId}}&courseId={{courseId}}
+
+### 4. Matrícula duplicada (409)
+POST {{baseUrl}}/enrollments
+Content-Type: application/json
+
+{
+  "studentId": {{studentId}},
+  "courseId": {{courseId}}
+}
+
+### 5. Matricular un estudiante inactivo (400)
+# Cambiar el id al de un estudiante existente y desactivarlo antes de ejecutar.
+PATCH {{baseUrl}}/students/{{studentId}}/status
+Content-Type: application/json
+
+{
+  "isActive": false
+}
+
+###
+POST {{baseUrl}}/enrollments
+Content-Type: application/json
+
+{
+  "studentId": {{studentId}},
+  "courseId": 2
+}
+
+### 6. Filtrar matrículas por estudiante o curso
+GET {{baseUrl}}/enrollments?studentId={{studentId}}
+
+###
+GET {{baseUrl}}/enrollments?courseId={{courseId}}
+
+### 7. Cancelar la matrícula y comprobar 404
+DELETE {{baseUrl}}/enrollments/{{enrollmentId}}
+
+###
+GET {{baseUrl}}/enrollments/{{enrollmentId}}
+# La solicitud anterior debe responder 404 después de la cancelación.

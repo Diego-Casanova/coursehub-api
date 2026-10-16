@@ -73,7 +73,7 @@ export class StudentService {
     private async ensureEmailIsAvailable(email: string, excludeId?: number): Promise<void> {
         const existing = await this.studentRepository.findOneBy({ email });
         if (existing && existing.id !== excludeId) {
-            throw new ConflictException(`The email ${email} is already registered`);
+            throw new ConflictException(`El correo ${email} ya está registrado`);
         }
     }
 
@@ -83,7 +83,7 @@ export class StudentService {
             return await this.studentRepository.save(student);
         } catch (error) {
             if (error instanceof QueryFailedError && this.isUniqueViolation(error)) {
-                throw new ConflictException('The email is already registered');
+                throw new ConflictException('El correo ya está registrado');
             }
             throw error;
         }

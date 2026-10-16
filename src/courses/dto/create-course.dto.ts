@@ -1,4 +1,4 @@
-import {IsIn, IsNotEmpty, IsString} from 'class-validator';
+import { IsIn, IsNotEmpty, IsOptional, IsString } from 'class-validator';
 
 export class CreateCourseDto{
     @IsString()
@@ -10,9 +10,12 @@ export class CreateCourseDto{
 }
 
 export class UpdateCourseDto {
+  @IsOptional()
   @IsString()
   @IsNotEmpty()
-  title: string;
+  title?: string;
+
+  @IsOptional()
   @IsIn(['beginner', 'intermediate', 'advanced'])
-  level:string;
+  level?: string;
 }

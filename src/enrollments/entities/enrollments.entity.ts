@@ -1,6 +1,6 @@
 import { Entity, ManyToOne, PrimaryGeneratedColumn, Unique } from 'typeorm';
-import { Student } from '../student/entitites/student.entity';
-import { Course } from '../courses/entities/course.entity';
+import { Student } from '../../student/entitites/student.entity';
+import { Course } from '../../courses/entities/course.entity';
 
 @Entity()
 @Unique(['student', 'course'])
