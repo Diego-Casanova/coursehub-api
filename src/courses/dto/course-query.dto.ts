@@ -8,7 +8,7 @@ export class CourseQueryDto extends PaginationQueryDto {
     message: 'level no es válido',
   })
   level?: string;
-
+ 
   @IsOptional()
   @IsIn(['id', 'title', 'level'], {
     message: 'sortBy debe ser id, title o level',
