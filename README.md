@@ -50,6 +50,8 @@ condiciones de carrera.
 | `GET` | `/courses` | Lista cursos paginados; query `level`, `page`, `limit`, `sortBy` (`id`, `title`, `level`) y `order` (`ASC`, `DESC`) | 200, 400 |
 | `GET` | `/courses/:id` | Obtiene un curso | 200, 400, 404 |
 | `POST` | `/enrollments` | Crea matrícula validando estudiante, curso, estado y duplicado | 201, 400, 404, 409 |
+| `POST` | `/auth/register` | Registra una cuenta con correo normalizado y contraseña almacenada como hash | 201, 400, 409 |
+| `POST` | `/auth/login` | Valida credenciales y devuelve datos seguros del usuario | 200, 400, 401 |
 | `GET` | `/enrollments` | Lista matrículas paginadas; combina `search`, `studentId`, `courseId`, `activeOnly`, `page` y `limit` | 200, 400 |
 | `GET` | `/enrollments/:id` | Obtiene una matrícula con estudiante y curso | 200, 400, 404 |
 | `GET` | `/students/:studentId/enrollments` | Lista matrículas del estudiante | 200, 400, 404 |
@@ -59,6 +61,12 @@ condiciones de carrera.
 Las respuestas de matrículas incluyen información no sensible del estudiante
 (`id`, `name`, `email`, `age`, `career`, `semester`, `isActive`) y del curso
 (`id`, `title`, `level`); no se exponen credenciales.
+
+Las cuentas se almacenan en `User`, separadas de `Students`. El correo de
+cuenta se recorta y convierte a minúsculas al registrarse o iniciar sesión.
+`passwordHash` se excluye de las consultas habituales y nunca se devuelve por
+HTTP. El inicio de sesión responde con el mismo error genérico si el correo no
+existe o la contraseña no coincide; aún no emite JWT ni aplica guards o roles.
 
 Todas las respuestas de listado usan este contrato:
 

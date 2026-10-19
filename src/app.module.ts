@@ -8,6 +8,7 @@ import { WelcomeController } from './welcome.controller';
 import { CoursesModule } from './courses/courses.module';
 import { StudentModule } from './student/student.module';
 import { EnrollmentsModule } from './enrollments/enrollments.module';
+import { AuthModule } from './auth/auth.module';
 
 @Module({
   imports: [
@@ -29,6 +30,7 @@ import { EnrollmentsModule } from './enrollments/enrollments.module';
     CoursesModule,
     StudentModule,
     EnrollmentsModule,
+    AuthModule,
   ],
   controllers: [AppController, WelcomeController],
   providers: [AppService, WelcomeService],
