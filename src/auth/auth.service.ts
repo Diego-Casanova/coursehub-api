@@ -8,14 +8,21 @@ import * as bcrypt from 'bcrypt';
 import { QueryFailedError, Repository } from 'typeorm';
 import { User } from './entities/user.entity';
 import { CredentialsDto } from './dto/credentials.dto';
+import { JwtService } from '@nestjs/jwt';
+import { JwtPayload } from './jwt/jwt-payload.interface';
 
 export type SafeUser = Pick<User, 'id' | 'email' | 'createdAt'>;
+export interface LoginResponse {
+  accessToken: string;
+  user: SafeUser;
+}
 
 @Injectable()
 export class AuthService {
   constructor(
     @InjectRepository(User)
     private readonly userRepository: Repository<User>,
+    private readonly jwtService: JwtService,
   ) {}
 
   async register(credentials: CredentialsDto): Promise<SafeUser> {
@@ -38,7 +45,7 @@ export class AuthService {
     }
   }
 
-  async login(credentials: CredentialsDto): Promise<SafeUser> {
+  async login(credentials: CredentialsDto): Promise<LoginResponse> {
     const user = await this.userRepository
       .createQueryBuilder('user')
       .addSelect('user.passwordHash')
@@ -50,7 +57,9 @@ export class AuthService {
     if (!user || !(await bcrypt.compare(credentials.password, user.passwordHash))) {
       throw new UnauthorizedException('Correo o contraseña incorrectos');
     }
-    return this.toSafeUser(user);
+    const payload: JwtPayload = { sub: user.id, email: user.email };
+    const accessToken = await this.jwtService.signAsync(payload);
+    return { accessToken, user: this.toSafeUser(user) };
   }
 
   private normalizeEmail(email: string): string {

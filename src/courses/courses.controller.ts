@@ -7,11 +7,13 @@ import {
   Patch,
   Post,
   Query,
+  UseGuards,
 } from '@nestjs/common';
 import { CoursesService } from './courses.service';
 import { CreateCourseDto, UpdateCourseDto } from './dto/create-course.dto';
 import { CourseQueryDto } from './dto/course-query.dto';
 import { ParsePositiveIntPipe } from '../common/pipes/parse-positive-int.pipe';
+import { JwtAuthGuard } from '../auth/jwt/jwt-auth.guard';
 
 @Controller('courses')
 export class CoursesController {
@@ -28,6 +30,7 @@ export class CoursesController {
   }
 
   @Post()
+  @UseGuards(JwtAuthGuard)
   create(@Body() body: CreateCourseDto) {
     return this.coursesService.create(body);
   }

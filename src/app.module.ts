@@ -9,10 +9,11 @@ import { CoursesModule } from './courses/courses.module';
 import { StudentModule } from './student/student.module';
 import { EnrollmentsModule } from './enrollments/enrollments.module';
 import { AuthModule } from './auth/auth.module';
+import { validateEnvironment } from './config/environment';
 
 @Module({
   imports: [
-    ConfigModule.forRoot({ isGlobal: true }),
+    ConfigModule.forRoot({ isGlobal: true, validate: validateEnvironment }),
     TypeOrmModule.forRootAsync({
       inject: [ConfigService],
       useFactory: (config: ConfigService) => ({

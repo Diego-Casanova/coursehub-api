@@ -25,6 +25,21 @@ npm install
 npm run start:dev
 ```
 
+La API acepta cualquier puerto definido en `PORT`; puedes usar `3000` o
+`3001`. En PowerShell, puedes cambiarlo para una ejecución concreta:
+
+```powershell
+$env:PORT = "3000"; npm run start
+$env:PORT = "3001"; npm run start
+```
+
+Si el puerto configurado está ocupado, la API intenta automáticamente el otro
+puerto entre `3000` y `3001` y lo informa en los logs.
+
+También se permiten solicitudes desde un frontend local en cualquiera de esos
+dos puertos, incluyendo el encabezado `Authorization: Bearer <token>` usado
+por `GET /auth/me`.
+
 `synchronize` está habilitado únicamente cuando `NODE_ENV` no es `production`,
 para desarrollo local. No se usan migraciones de producción en este proyecto.
 
@@ -46,12 +61,13 @@ condiciones de carrera.
 | `GET` | `/students/:id` | Obtiene un estudiante | 200, 404 |
 | `PATCH` | `/students/:id` | Actualiza un estudiante | 200, 400, 404, 409 |
 | `PATCH` | `/students/:id/status` | Cambia `isActive` | 200, 400, 404 |
-| `POST` | `/courses` | Crea un curso persistido | 201, 400 |
+| `POST` | `/courses` | Crea un curso persistido (requiere Bearer JWT) | 201, 400, 401 |
 | `GET` | `/courses` | Lista cursos paginados; query `level`, `page`, `limit`, `sortBy` (`id`, `title`, `level`) y `order` (`ASC`, `DESC`) | 200, 400 |
 | `GET` | `/courses/:id` | Obtiene un curso | 200, 400, 404 |
 | `POST` | `/enrollments` | Crea matrícula validando estudiante, curso, estado y duplicado | 201, 400, 404, 409 |
 | `POST` | `/auth/register` | Registra una cuenta con correo normalizado y contraseña almacenada como hash | 201, 400, 409 |
-| `POST` | `/auth/login` | Valida credenciales y devuelve datos seguros del usuario | 200, 400, 401 |
+| `POST` | `/auth/login` | Valida credenciales y devuelve `accessToken` y datos seguros del usuario | 200, 400, 401 |
+| `GET` | `/auth/me` | Devuelve la identidad autenticada (requiere Bearer JWT) | 200, 401 |
 | `GET` | `/enrollments` | Lista matrículas paginadas; combina `search`, `studentId`, `courseId`, `activeOnly`, `page` y `limit` | 200, 400 |
 | `GET` | `/enrollments/:id` | Obtiene una matrícula con estudiante y curso | 200, 400, 404 |
 | `GET` | `/students/:studentId/enrollments` | Lista matrículas del estudiante | 200, 400, 404 |
@@ -65,8 +81,13 @@ Las respuestas de matrículas incluyen información no sensible del estudiante
 Las cuentas se almacenan en `User`, separadas de `Students`. El correo de
 cuenta se recorta y convierte a minúsculas al registrarse o iniciar sesión.
 `passwordHash` se excluye de las consultas habituales y nunca se devuelve por
-HTTP. El inicio de sesión responde con el mismo error genérico si el correo no
-existe o la contraseña no coincide; aún no emite JWT ni aplica guards o roles.
+HTTP. El inicio de sesión compara la contraseña con bcrypt y, solo si es
+correcta, firma un JWT con `sub` y `email`; devuelve un token y datos seguros.
+La estrategia Bearer valida firma y caducidad. `JWT_SECRET` (mínimo 32
+caracteres) y `JWT_EXPIRES_IN` (por ejemplo `1h`) son obligatorios y se validan
+al iniciar. El login incorrecto responde con el mismo error genérico 401.
+`JwtAuthGuard` protege `GET /auth/me` y `POST /courses`; registro y login son
+públicos. No hay autorización por roles.
 
 Todas las respuestas de listado usan este contrato:
 
