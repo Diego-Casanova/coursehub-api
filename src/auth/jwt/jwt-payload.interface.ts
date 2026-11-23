@@ -6,4 +6,5 @@ export interface JwtPayload {
 export interface AuthenticatedUser {
   id: number;
   email: string;
+  role: import('../roles/user-role.enum').UserRole;
 }

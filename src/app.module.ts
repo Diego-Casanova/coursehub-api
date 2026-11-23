@@ -1,4 +1,4 @@
-import { Module } from '@nestjs/common';
+import { MiddlewareConsumer, Module, NestModule } from '@nestjs/common';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { AppController } from './app.controller';
@@ -10,6 +10,8 @@ import { StudentModule } from './student/student.module';
 import { EnrollmentsModule } from './enrollments/enrollments.module';
 import { AuthModule } from './auth/auth.module';
 import { validateEnvironment } from './config/environment';
+import { AdminModule } from './admin/admin.module';
+import { RequestLoggerMiddleware } from './common/middleware/request-logger.middleware';
 
 @Module({
   imports: [
@@ -32,8 +34,13 @@ import { validateEnvironment } from './config/environment';
     StudentModule,
     EnrollmentsModule,
     AuthModule,
+    AdminModule,
   ],
   controllers: [AppController, WelcomeController],
   providers: [AppService, WelcomeService],
 })
-export class AppModule {}
+export class AppModule implements NestModule {
+  configure(consumer: MiddlewareConsumer) {
+    consumer.apply(RequestLoggerMiddleware).forRoutes('*');
+  }
+}

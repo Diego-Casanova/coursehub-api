@@ -4,6 +4,7 @@ import { AuthService, LoginResponse, SafeUser } from './auth.service';
 import { CredentialsDto } from './dto/credentials.dto';
 import { JwtAuthGuard } from './jwt/jwt-auth.guard';
 import type { AuthenticatedUser } from './jwt/jwt-payload.interface';
+import { LoginRateLimitGuard } from './roles/login-rate-limit.guard';
 
 type AuthenticatedRequest = Request & { user: AuthenticatedUser };
 
@@ -18,6 +19,7 @@ export class AuthController {
 
   @Post('login')
   @HttpCode(HttpStatus.OK)
+  @UseGuards(LoginRateLimitGuard)
   login(@Body() credentials: CredentialsDto): Promise<LoginResponse> {
     return this.authService.login(credentials);
   }

@@ -5,12 +5,14 @@ import { StudentModule } from '../student/student.module';
 import { EnrollmentsController } from './enrollments.controller';
 import { EnrollmentsService } from './enrollments.service';
 import { Enrollments } from './entities/enrollments.entity';
+import { AuthModule } from '../auth/auth.module';
 
 @Module({
   imports: [
     TypeOrmModule.forFeature([Enrollments]),
     StudentModule,
     CoursesModule,
+    AuthModule,
   ],
   controllers: [EnrollmentsController],
   providers: [EnrollmentsService],

@@ -8,6 +8,8 @@ import { ConfigService } from '@nestjs/config';
 import { PassportModule } from '@nestjs/passport';
 import { JwtStrategy } from './jwt/jwt.strategy';
 import { JwtAuthGuard } from './jwt/jwt-auth.guard';
+import { RolesGuard } from './roles/roles.guard';
+import { LoginRateLimitGuard } from './roles/login-rate-limit.guard';
 
 @Module({
   imports: [
@@ -24,7 +26,7 @@ import { JwtAuthGuard } from './jwt/jwt-auth.guard';
     }),
   ],
   controllers: [AuthController],
-  providers: [AuthService, JwtStrategy, JwtAuthGuard],
-  exports: [JwtAuthGuard, PassportModule],
+  providers: [AuthService, JwtStrategy, JwtAuthGuard, RolesGuard, LoginRateLimitGuard],
+  exports: [JwtAuthGuard, RolesGuard, PassportModule],
 })
 export class AuthModule {}

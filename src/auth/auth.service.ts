@@ -10,8 +10,9 @@ import { User } from './entities/user.entity';
 import { CredentialsDto } from './dto/credentials.dto';
 import { JwtService } from '@nestjs/jwt';
 import { JwtPayload } from './jwt/jwt-payload.interface';
+import { UserRole } from './roles/user-role.enum';
 
-export type SafeUser = Pick<User, 'id' | 'email' | 'createdAt'>;
+export type SafeUser = Pick<User, 'id' | 'email' | 'createdAt' | 'role'>;
 export interface LoginResponse {
   accessToken: string;
   user: SafeUser;
@@ -33,6 +34,7 @@ export class AuthService {
     const user = this.userRepository.create({
       email,
       passwordHash: await bcrypt.hash(credentials.password, 10),
+      role: UserRole.STUDENT,
     });
     try {
       const created = await this.userRepository.save(user);
@@ -67,7 +69,12 @@ export class AuthService {
   }
 
   private toSafeUser(user: User): SafeUser {
-    return { id: user.id, email: user.email, createdAt: user.createdAt };
+    return {
+      id: user.id,
+      email: user.email,
+      createdAt: user.createdAt,
+      role: user.role,
+    };
   }
 
   private isUniqueViolation(error: QueryFailedError): boolean {
